@@ -1,6 +1,7 @@
 import os
+import requests
 import anthropic
-from gitlab import (
+from gitlab_tools import (
     MongoDB,
     get_authorization_url,
     exchange_code_for_token,
@@ -38,20 +39,16 @@ def chat():
             max_tokens=150
         )
 
-        # Debugging: Print the entire response to see its structure
-        print("\nFull Response from Claude:")
-        print(response)
-
-        # Handle the response from Claude correctly
+        # Correctly access the assistant's response
         try:
-            # If the response contains 'content', access the first item
             if 'content' in response and isinstance(response['content'], list):
                 assistant_response = response['content'][0].text  # Accessing the text of the first element
             else:
                 assistant_response = "Sorry, I couldn't understand your request."
-            print(f"\nClaude: {assistant_response}")
         except Exception as e:
-            print(f"\nError accessing response: {str(e)}")
+            assistant_response = "Error accessing response: " + str(e)
+
+        print(f"\nClaude: {assistant_response}")
 
         # Based on user input, trigger GitLab actions if relevant
         if "auth url" in user_input:
@@ -96,7 +93,11 @@ def chat():
                 clone_url = clone_repository(username, repo_name, db)
                 print(f"\nClone URL for repository '{repo_name}': {clone_url}")
             except Exception as e:
-                print(f"Error: {e}")
+                # More detailed error handling
+                if '404' in str(e):
+                    print(f"Error: Repository '{repo_name}' not found or inaccessible.")
+                else:
+                    print(f"Error: {e}")
 
         elif "delete token" in user_input:
             username = input("Enter your GitLab username: ").strip()
