@@ -41,15 +41,9 @@ def chat():
 
         # Correctly access the assistant's response
         try:
-            if 'content' in response and isinstance(response['content'], list):
-                assistant_response = response['content'][0].text  # Accessing the text of the first element
-            else:
-                assistant_response = "Sorry, I couldn't understand your request."
+            assistant_response = response.content[0].text  # Directly access 'content'
         except Exception as e:
-            assistant_response = "Error accessing response: " + str(e)
-
-        print(f"\nClaude: {assistant_response}")
-
+            assistant_response = f"Error accessing response: {e}"
         # Based on user input, trigger GitLab actions if relevant
         if "auth url" in user_input:
             try:
